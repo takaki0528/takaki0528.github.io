@@ -101,7 +101,7 @@ function drawChart(chartId, yAxisTitle, data) {
             left: 'center',
             textStyle: {
                 fontSize: 16,  // フォントサイズを調整
-                padding: [10, 0, 0, 0]  // 上部に余白を追加
+                padding: [100, 0, 0, 0]  // 上部に余白を追加
             }
         },
         tooltip: {
