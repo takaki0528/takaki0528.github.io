@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECharts Mobile Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script language="javascript" src="js/createGraph.js"></script>
+    <style>
+        .graph-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .graph-container > div {
+            width: 100%;
+        }
+
+        /* For mobile devices */
+        @media (max-width: 1000px) {
+            .graph-container > div {
+                width: 100%; /* Full width for mobile */
+            }
+        }
+
+        /* Testing in Chrome DevTools */
+        @media (max-width: 480px) {
+            .graph-container > div {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body onload="createChart();">
+    <div class="graph-container">
+        <div id="voltageChart" style="height: 450px;"></div>
+        <div id="currentChart" style="height: 450px;"></div>
+        <div id="socChart" style="height: 450px;"></div>
+        <div id="tempChart" style="height: 450px;"></div>
+    </div>
+</body>
+</html>
