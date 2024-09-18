@@ -6,28 +6,30 @@
     <title>Battery Monitoring System</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-    <script language="javascript" src="createGraph.js"></script>
+    <script src="createGraph.js"></script>
     <style>
         .graph-container {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
+            justify-content: space-between;
         }
         .graph-container > div {
             width: 100%;
+            margin-bottom: 20px;  /* グラフ同士の間に余白を追加 */
         }
 
-        /* For mobile devices */
+        /* For tablet and smaller devices */
         @media (max-width: 1000px) {
             .graph-container > div {
-                width: 100%; /* Full width for mobile */
+                width: 100%;  /* フル幅で表示 */
             }
         }
 
-        /* Testing in Chrome DevTools */
+        /* For mobile devices */
         @media (max-width: 480px) {
             .graph-container > div {
-                width: 100%;
+                width: 100%;  /* モバイルでもフル幅 */
             }
         }
     </style>

@@ -51,7 +51,7 @@ function drawChartsForAllBA(vals) {
         ba_ids.forEach(function(ba_id) {
             voltage_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].voltage]);
             current_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].current]);
-            soc_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc*100]);
+            soc_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc * 100]);
             temp_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].temperature]);
         });
     }
@@ -87,7 +87,7 @@ function drawChart(chartId, yAxisTitle, data) {
             type: 'line',
             data: data[ba_id].map(item => item[1]),
             tooltip: {
-                valueFormatter: function (value) {
+                valueFormatter: function(value) {
                     return value.toFixed(3);  // 小数点第3位まで
                 }
             }
@@ -96,7 +96,14 @@ function drawChart(chartId, yAxisTitle, data) {
 
     var chart = echarts.init(document.getElementById(chartId));
     chart.setOption({
-        title: { text: yAxisTitle + ' Over Time' },
+        title: {
+            text: yAxisTitle + ' Over Time',
+            left: 'center',
+            textStyle: {
+                fontSize: 16,  // フォントサイズを調整
+                padding: [10, 0, 0, 0]  // 上部に余白を追加
+            }
+        },
         tooltip: {
             trigger: 'axis',
             formatter: function(params) {
@@ -115,6 +122,11 @@ function drawChart(chartId, yAxisTitle, data) {
             scale: true  // データに基づいて自動で範囲を設定
         },
         series: series
+    });
+
+    // ウィンドウリサイズ時にグラフをリサイズ
+    window.addEventListener('resize', function() {
+        chart.resize();
     });
 }
 
