@@ -99,6 +99,7 @@ function drawChart(chartId, yAxisTitle, data) {
         title: {
             text: yAxisTitle + ' Over Time',
             left: 'center',
+            top: '5%',  // タイトルを少し下に配置
             textStyle: {
                 fontSize: 16,  // フォントサイズを調整
                 padding: [10, 0, 0, 0]  // 上部に余白を追加
@@ -114,9 +115,13 @@ function drawChart(chartId, yAxisTitle, data) {
                 return result;
             }
         },
-        legend: { 
-            data: ba_ids ,
-            padding: [10, 0, 0, 0]  // 上部に余白を追加
+        legend: {
+            data: ba_ids,
+            top: '10%',  // 凡例をタイトルの下に移動
+            right: 'center'  // 画面の中央に配置
+        },
+        grid: {
+            top: '20%'  // グラフの描画エリアを少し下に設定し、タイトルや凡例との余白を増やす
         },
         xAxis: { type: 'category', data: data[ba_ids[0]].map(item => item[0]) },
         yAxis: {
