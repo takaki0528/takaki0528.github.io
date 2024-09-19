@@ -4,8 +4,8 @@ const urlsToCache = [
   '/index.html',
   '/createGraph.js',
   '/manifest.json',
-  'https://via.placeholder.com/192',
-  'https://via.placeholder.com/512'
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png'
 ];
 
 // インストール時にキャッシュするリソースを指定
