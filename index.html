@@ -20,14 +20,12 @@
             margin-bottom: 20px;
         }
 
-        /* For tablet and smaller devices */
         @media (max-width: 1000px) {
             .graph-container > div {
                 width: 100%;
             }
         }
 
-        /* For mobile devices */
         @media (max-width: 480px) {
             .graph-container > div {
                 width: 100%;
@@ -44,6 +42,8 @@
             <option value="ba1">ba1</option>
             <option value="ba2">ba2</option>
             <option value="ba3">ba3</option>
+            <option value="Ave">Ave</option>
+            <option value="All">All</option>
         </select>
     </div>
 
@@ -54,7 +54,6 @@
         <div id="tempChart" style="height: 450px;"></div>
     </div>
 
-    <!-- `createGraph.js` を最後に読み込む -->
     <script src="createGraph.js"></script>
 </body>
 </html>
