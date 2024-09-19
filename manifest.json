@@ -3,16 +3,16 @@
     "short_name": "BMS",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#4CAF50",
+    "background_color": "#8C4A46",
+    "theme_color": "#8C4A46",
     "icons": [
       {
-        "src": "https://via.placeholder.com/192",
+        "src": "/icons/icon-192x192.png",
         "type": "image/png",
         "sizes": "192x192"
       },
       {
-        "src": "https://via.placeholder.com/512",
+        "src": "/icons/icon-512x512.png",
         "type": "image/png",
         "sizes": "512x512"
       }
