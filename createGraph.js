@@ -4,7 +4,7 @@ var selectedBaId = "Ave";  // 初期値は Ave
 var hosturl = "https://4bbamgyg6f.execute-api.ap-northeast-1.amazonaws.com/bms";
 var apiurl = hosturl + "/datas/" + device_name;
 var retryInterval = 60000;
-var windowSize = 10;  // 平均化処理のウィンドウサイズ
+var windowSize = 1;  // 平均化処理のウィンドウサイズ
 
 function createChart() {
     reqGet();  // まず一度実行
