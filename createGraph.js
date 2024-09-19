@@ -1,6 +1,6 @@
 var device_name = "bms_multiple_battery";
 var ba_ids = ["ba0", "ba1", "ba2", "ba3"];
-var selectedBaId = "Ave";  // 初期値は ba0
+var selectedBaId = "ba0";  // 初期値は ba0
 var hosturl = "https://4bbamgyg6f.execute-api.ap-northeast-1.amazonaws.com/bms";
 var apiurl = hosturl + "/datas/" + device_name;
 var retryInterval = 60000;
@@ -163,6 +163,60 @@ function drawChartForAll(chartId, yAxisTitle, data) {
             scale: true
         },
         series: series
+    });
+
+    window.addEventListener('resize', function() {
+        chart.resize();
+    });
+}
+
+// 単一のバッテリーや平均データを描画するための基本的な関数
+function drawChart(chartId, yAxisTitle, data) {
+    var chart = echarts.init(document.getElementById(chartId));
+    chart.setOption({
+        title: {
+            text: yAxisTitle + ' Over Time',
+            left: 'center',
+            top: '5%',
+            textStyle: {
+                fontSize: 16,
+                padding: [10, 0, 0, 0]
+            }
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function(params) {
+                let result = params[0].axisValueLabel + '<br/>';
+                params.forEach(item => {
+                    result += item.marker + ' ' + item.seriesName + ': ' + item.data.toFixed(3) + '<br/>';
+                });
+                return result;
+            }
+        },
+        legend: {
+            data: [selectedBaId],
+            top: '10%',
+            right: 'center'
+        },
+        grid: {
+            top: '20%'
+        },
+        xAxis: { type: 'category', data: data.map(item => item[0]) },
+        yAxis: {
+            type: 'value',
+            name: yAxisTitle,
+            scale: true
+        },
+        series: [{
+            name: selectedBaId,
+            type: 'line',
+            data: data.map(item => item[1]),
+            tooltip: {
+                valueFormatter: function(value) {
+                    return value.toFixed(3);
+                }
+            }
+        }]
     });
 
     window.addEventListener('resize', function() {
