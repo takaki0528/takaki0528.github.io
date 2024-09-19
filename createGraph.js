@@ -45,7 +45,7 @@ function drawChartsForSelectedBA(vals, ba_id) {
     }
 
     // 平均化処理
-    var windowSize = 60;
+    var windowSize = 100;
     voltage_data = calculateMovingAverage(voltage_data, windowSize);
     current_data = calculateMovingAverage(current_data, windowSize);
     soc_data = calculateMovingAverage(soc_data, windowSize);
