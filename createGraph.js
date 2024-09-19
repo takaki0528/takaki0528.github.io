@@ -1,6 +1,6 @@
 var device_name = "bms_multiple_battery";
 var ba_ids = ["ba0", "ba1", "ba2", "ba3"];
-var selectedBaId = "Ave";  // 初期値は ba0
+var selectedBaId = "Ave";  // 初期値は Ave
 var hosturl = "https://4bbamgyg6f.execute-api.ap-northeast-1.amazonaws.com/bms";
 var apiurl = hosturl + "/datas/" + device_name;
 var retryInterval = 60000;
