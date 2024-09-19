@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Battery Monitoring System</title>
-    <!-- ファビコンを指定 -->
     <link rel="icon" href="./icons/icon-192x192.png" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -12,23 +11,47 @@
     <style>
         .graph-container {
             display: flex;
-            flex-wrap: wrap;
-            align-items: center;
             justify-content: space-between;
+            align-items: flex-start;
         }
+
+        .charts-wrapper {
+            flex: 0 0 70%;  /* 左側のグラフエリアの幅 */
+        }
+
+        .latest-values {
+            flex: 0 0 30%;  /* 右側の最新の値エリアの幅 */
+            padding-left: 20px;
+        }
+
+        .latest-values h3 {
+            margin-top: 0;
+        }
+
+        .latest-values p {
+            font-size: 1.5em;  /* 大きく表示 */
+        }
+
         .graph-container > div {
-            width: 100%;
             margin-bottom: 20px;
         }
 
         @media (max-width: 1000px) {
-            .graph-container > div {
+            .charts-wrapper {
+                width: 100%;
+            }
+
+            .latest-values {
                 width: 100%;
             }
         }
 
         @media (max-width: 480px) {
-            .graph-container > div {
+            .charts-wrapper {
+                width: 100%;
+            }
+
+            .latest-values {
                 width: 100%;
             }
         }
@@ -49,10 +72,21 @@
     </div>
 
     <div class="graph-container">
-        <div id="voltageChart" style="height: 450px;"></div>
-        <div id="currentChart" style="height: 450px;"></div>
-        <div id="socChart" style="height: 450px;"></div>
-        <div id="tempChart" style="height: 450px;"></div>
+        <!-- 左側のグラフを表示するエリア -->
+        <div class="charts-wrapper">
+            <div id="voltageChart" style="height: 450px;"></div>
+            <div id="currentChart" style="height: 450px;"></div>
+            <div id="socChart" style="height: 450px;"></div>
+            <div id="tempChart" style="height: 450px;"></div>
+        </div>
+        <!-- 右側の最新の値を表示するエリア -->
+        <div class="latest-values">
+            <h3>Latest Values</h3>
+            <p id="latestVoltage">Voltage: N/A</p>
+            <p id="latestCurrent">Current: N/A</p>
+            <p id="latestSOC">SOC: N/A</p>
+            <p id="latestTemp">Temperature: N/A</p>
+        </div>
     </div>
 
     <script src="createGraph.js"></script>
