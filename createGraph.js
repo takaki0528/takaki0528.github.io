@@ -1,9 +1,10 @@
 var device_name = "bms_multiple_battery";
 var ba_ids = ["ba0", "ba1", "ba2", "ba3"];
-var selectedBaId = "All";  // 初期値は ba0
+var selectedBaId = "Ave";  // 初期値は ba0
 var hosturl = "https://4bbamgyg6f.execute-api.ap-northeast-1.amazonaws.com/bms";
 var apiurl = hosturl + "/datas/" + device_name;
 var retryInterval = 60000;
+var windowSize = 10;  // 平均化処理のウィンドウサイズ
 
 function createChart() {
     reqGet();  // まず一度実行
@@ -50,6 +51,12 @@ function drawChartsForSelectedBA(vals, ba_id) {
         temp_data.push([vals[i].timestamp, vals[i][ba_id].temperature]);
     }
 
+    // 平均化処理
+    voltage_data = calculateMovingAverage(voltage_data, windowSize);
+    current_data = calculateMovingAverage(current_data, windowSize);
+    soc_data = calculateMovingAverage(soc_data, windowSize);
+    temp_data = calculateMovingAverage(temp_data, windowSize);
+
     drawChart("voltageChart", "Voltage (V)", voltage_data);
     drawChart("currentChart", "Current (A)", current_data);
     drawChart("socChart", "SOC (%)", soc_data);
@@ -79,6 +86,12 @@ function drawChartsForAverage(vals) {
         temp_data.push([vals[i].timestamp, avg_temp]);
     }
 
+    // 平均化処理
+    voltage_data = calculateMovingAverage(voltage_data, windowSize);
+    current_data = calculateMovingAverage(current_data, windowSize);
+    soc_data = calculateMovingAverage(soc_data, windowSize);
+    temp_data = calculateMovingAverage(temp_data, windowSize);
+
     drawChart("voltageChart", "Average Voltage (V)", voltage_data);
     drawChart("currentChart", "Average Current (A)", current_data);
     drawChart("socChart", "Average SOC (%)", soc_data);
@@ -105,6 +118,14 @@ function drawChartsForAllBA(vals) {
         });
     }
 
+    // 各データに平均化処理
+    ba_ids.forEach(function(ba_id) {
+        voltage_data[ba_id] = calculateMovingAverage(voltage_data[ba_id], windowSize);
+        current_data[ba_id] = calculateMovingAverage(current_data[ba_id], windowSize);
+        soc_data[ba_id] = calculateMovingAverage(soc_data[ba_id], windowSize);
+        temp_data[ba_id] = calculateMovingAverage(temp_data[ba_id], windowSize);
+    });
+
     drawChartForAll("voltageChart", "Voltage (V)", voltage_data);
     drawChartForAll("currentChart", "Current (A)", current_data);
     drawChartForAll("socChart", "SOC (%)", soc_data);
@@ -113,6 +134,11 @@ function drawChartsForAllBA(vals) {
 
 // 全バッテリーのデータを同時に描画するための関数
 function drawChartForAll(chartId, yAxisTitle, data) {
+    // 既存のグラフインスタンスを破棄
+    if (echarts.getInstanceByDom(document.getElementById(chartId))) {
+        echarts.dispose(document.getElementById(chartId));  // グラフをクリア
+    }
+
     var series = [];
     ba_ids.forEach(function(ba_id) {
         series.push({
@@ -172,6 +198,11 @@ function drawChartForAll(chartId, yAxisTitle, data) {
 
 // 単一のバッテリーや平均データを描画するための基本的な関数
 function drawChart(chartId, yAxisTitle, data) {
+    // 既存のグラフインスタンスがある場合は破棄
+    if (echarts.getInstanceByDom(document.getElementById(chartId))) {
+        echarts.dispose(document.getElementById(chartId));  // グラフをクリア
+    }
+
     var chart = echarts.init(document.getElementById(chartId));
     chart.setOption({
         title: {
@@ -222,6 +253,19 @@ function drawChart(chartId, yAxisTitle, data) {
     window.addEventListener('resize', function() {
         chart.resize();
     });
+}
+
+// 平均化処理
+function calculateMovingAverage(data, windowSize) {
+    let result = [];
+    for (let i = 0; i < data.length - windowSize + 1; i++) {
+        let sum = 0;
+        for (let j = i; j < i + windowSize; j++) {
+            sum += data[j][1];
+        }
+        result.push([data[i][0], sum / windowSize]);
+    }
+    return result;
 }
 
 createChart();
