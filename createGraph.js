@@ -1,5 +1,6 @@
 var device_name = "bms_multiple_battery";
 var ba_ids = ["ba0", "ba1", "ba2", "ba3"];
+var selectedBaId = "ba0";  // 初期値は ba0
 var hosturl = "https://4bbamgyg6f.execute-api.ap-northeast-1.amazonaws.com/bms";
 var apiurl = hosturl + "/datas/" + device_name;
 var retryInterval = 60000;
@@ -11,13 +12,20 @@ function createChart() {
     }, retryInterval);
 }
 
+// 選択されたバッテリーIDを変更したときに呼び出される関数
+function handleBatteryChange() {
+    var selectElement = document.getElementById("batterySelect");
+    selectedBaId = selectElement.value;  // 新しいバッテリーIDを取得
+    reqGet();  // 新しいバッテリーのデータを取得して更新
+}
+
 function reqGet() {
     console.log("reqGet() start");
     $.ajax({
         url: apiurl,
         method: "GET",
         success: function(data) {
-            drawChartsForAllBA(data[device_name]);
+            drawChartsForSelectedBA(data[device_name], selectedBaId);
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log("Error: " + textStatus + " " + errorThrown);
@@ -25,53 +33,29 @@ function reqGet() {
     });
 }
 
-function calculateMovingAverage(data, windowSize) {
-    let result = [];
-    for (let i = 0; i < data.length - windowSize + 1; i++) {
-        let sum = 0;
-        for (let j = i; j < i + windowSize; j++) {
-            sum += data[j][1];  // データのy軸の値を加算
-        }
-        result.push([data[i][0], sum / windowSize]);  // 平均を計算
-    }
-    return result;
-}
-
-function drawChartsForAllBA(vals) {
-    var voltage_data = {}, current_data = {}, soc_data = {}, temp_data = {};
-
-    ba_ids.forEach(function(ba_id) {
-        voltage_data[ba_id] = [];
-        current_data[ba_id] = [];
-        soc_data[ba_id] = [];
-        temp_data[ba_id] = [];
-    });
+// 選択されたバッテリーIDに基づいてデータを描画
+function drawChartsForSelectedBA(vals, ba_id) {
+    var voltage_data = [], current_data = [], soc_data = [], temp_data = [];
 
     for (var i = 0; i < vals.length; i++) {
-        ba_ids.forEach(function(ba_id) {
-            voltage_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].voltage]);
-            current_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].current]);
-            soc_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc * 100]);
-            temp_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].temperature]);
-        });
+        voltage_data.push([vals[i].timestamp, vals[i][ba_id].voltage]);
+        current_data.push([vals[i].timestamp, vals[i][ba_id].current]);
+        soc_data.push([vals[i].timestamp, vals[i][ba_id].soc * 100]);
+        temp_data.push([vals[i].timestamp, vals[i][ba_id].temperature]);
     }
 
     // 平均化処理
-    var windowSize = 60;  // ここで移動平均のウィンドウサイズを指定
-    ba_ids.forEach(function(ba_id) {
-        voltage_data[ba_id] = calculateMovingAverage(voltage_data[ba_id], windowSize);
-        current_data[ba_id] = calculateMovingAverage(current_data[ba_id], windowSize);
-        soc_data[ba_id] = calculateMovingAverage(soc_data[ba_id], windowSize);
-        temp_data[ba_id] = calculateMovingAverage(temp_data[ba_id], windowSize);
-    });
+    var windowSize = 60;
+    voltage_data = calculateMovingAverage(voltage_data, windowSize);
+    current_data = calculateMovingAverage(current_data, windowSize);
+    soc_data = calculateMovingAverage(soc_data, windowSize);
+    temp_data = calculateMovingAverage(temp_data, windowSize);
 
     // X軸とY軸を反転する処理を追加
-    ba_ids.forEach(function(ba_id) {
-        voltage_data[ba_id] = voltage_data[ba_id].reverse();
-        current_data[ba_id] = current_data[ba_id].reverse();
-        soc_data[ba_id] = soc_data[ba_id].reverse();
-        temp_data[ba_id] = temp_data[ba_id].reverse();
-    });
+    voltage_data = voltage_data.reverse();
+    current_data = current_data.reverse();
+    soc_data = soc_data.reverse();
+    temp_data = temp_data.reverse();
 
     drawChart("voltageChart", "Voltage (V)", voltage_data);
     drawChart("currentChart", "Current (A)", current_data);
@@ -79,30 +63,28 @@ function drawChartsForAllBA(vals) {
     drawChart("tempChart", "Temperature (C)", temp_data);
 }
 
-function drawChart(chartId, yAxisTitle, data) {
-    var series = [];
-    ba_ids.forEach(function(ba_id) {
-        series.push({
-            name: ba_id,
-            type: 'line',
-            data: data[ba_id].map(item => item[1]),
-            tooltip: {
-                valueFormatter: function(value) {
-                    return value.toFixed(3);  // 小数点第3位まで
-                }
-            }
-        });
-    });
+function calculateMovingAverage(data, windowSize) {
+    let result = [];
+    for (let i = 0; i < data.length - windowSize + 1; i++) {
+        let sum = 0;
+        for (let j = i; j < i + windowSize; j++) {
+            sum += data[j][1];
+        }
+        result.push([data[i][0], sum / windowSize]);
+    }
+    return result;
+}
 
+function drawChart(chartId, yAxisTitle, data) {
     var chart = echarts.init(document.getElementById(chartId));
     chart.setOption({
         title: {
             text: yAxisTitle + ' Over Time',
             left: 'center',
-            top: '5%',  // タイトルを少し下に配置
+            top: '5%',
             textStyle: {
-                fontSize: 16,  // フォントサイズを調整
-                padding: [10, 0, 0, 0]  // 上部に余白を追加
+                fontSize: 16,
+                padding: [10, 0, 0, 0]
             }
         },
         tooltip: {
@@ -116,23 +98,31 @@ function drawChart(chartId, yAxisTitle, data) {
             }
         },
         legend: {
-            data: ba_ids,
-            top: '10%',  // 凡例をタイトルの下に移動
-            right: 'center'  // 画面の中央に配置
+            data: [selectedBaId],
+            top: '10%',
+            right: 'center'
         },
         grid: {
-            top: '20%'  // グラフの描画エリアを少し下に設定し、タイトルや凡例との余白を増やす
+            top: '20%'
         },
-        xAxis: { type: 'category', data: data[ba_ids[0]].map(item => item[0]) },
+        xAxis: { type: 'category', data: data.map(item => item[0]) },
         yAxis: {
             type: 'value',
             name: yAxisTitle,
-            scale: true  // データに基づいて自動で範囲を設定
+            scale: true
         },
-        series: series
+        series: [{
+            name: selectedBaId,
+            type: 'line',
+            data: data.map(item => item[1]),
+            tooltip: {
+                valueFormatter: function(value) {
+                    return value.toFixed(3);
+                }
+            }
+        }]
     });
 
-    // ウィンドウリサイズ時にグラフをリサイズ
     window.addEventListener('resize', function() {
         chart.resize();
     });

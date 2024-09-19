@@ -5,15 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Battery Monitoring System</title>
     
-    <!-- PWA 関連タグ -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#4CAF50">
-    <link rel="icon" href="/icons/icon-192x192.png">
-
     <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="createGraph.js"></script>
-    
+
     <style>
         .graph-container {
             display: flex;
@@ -23,25 +18,36 @@
         }
         .graph-container > div {
             width: 100%;
-            margin-bottom: 20px;  /* グラフ同士の間に余白を追加 */
+            margin-bottom: 20px;
         }
 
         /* For tablet and smaller devices */
         @media (max-width: 1000px) {
             .graph-container > div {
-                width: 100%;  /* フル幅で表示 */
+                width: 100%;
             }
         }
 
         /* For mobile devices */
         @media (max-width: 480px) {
             .graph-container > div {
-                width: 100%;  /* モバイルでもフル幅 */
+                width: 100%;
             }
         }
     </style>
 </head>
-<body onload="createChart();">
+<body>
+    <div>
+        <!-- バッテリーID選択用のドロップダウン -->
+        <label for="batterySelect">Select Battery ID:</label>
+        <select id="batterySelect" onchange="handleBatteryChange()">
+            <option value="ba0">ba0</option>
+            <option value="ba1">ba1</option>
+            <option value="ba2">ba2</option>
+            <option value="ba3">ba3</option>
+        </select>
+    </div>
+
     <div class="graph-container">
         <div id="voltageChart" style="height: 450px;"></div>
         <div id="currentChart" style="height: 450px;"></div>
@@ -49,18 +55,6 @@
         <div id="tempChart" style="height: 450px;"></div>
     </div>
 
-    <!-- Service Worker 登録 -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/service-worker.js')
-                .then(function(registration) {
-                    console.log('Service Worker registered with scope:', registration.scope);
-                }, function(error) {
-                    console.log('Service Worker registration failed:', error);
-                });
-            });
-        }
-    </script>
+    <script src="createGraph.js"></script>
 </body>
 </html>
