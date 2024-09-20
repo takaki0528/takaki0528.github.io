@@ -117,10 +117,10 @@ function drawChartsForAverage(vals) {
 
 // 最新の平均値を表示するための関数
 function updateLatestValues(latestData) {
-    document.getElementById("latestVoltage").textContent = `Voltage: ${latestData.voltage.toFixed(2)} V`;
-    document.getElementById("latestCurrent").textContent = `Current: ${latestData.current.toFixed(2)} A`;
-    document.getElementById("latestSOC").textContent = `SOC: ${(latestData.soc * 100).toFixed(2)} %`;
-    document.getElementById("latestTemp").textContent = `Temperature: ${latestData.temperature.toFixed(2)} °C`;
+    document.getElementById("latestVoltage").textContent = `Voltage:\n ${latestData.voltage.toFixed(2)} V`;
+    document.getElementById("latestCurrent").textContent = `Current:\n ${latestData.current.toFixed(2)} A`;
+    document.getElementById("latestSOC").textContent = `SOC:\n ${(latestData.soc * 100).toFixed(2)} %`;
+    document.getElementById("latestTemp").textContent = `Temperature:\n ${latestData.temperature.toFixed(2)} °C`;
 }
 
 // 平均化処理
