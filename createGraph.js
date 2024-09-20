@@ -219,7 +219,7 @@ function drawChartForAll(chartId, yAxisTitle, data) {
 function updateLatestValues(latestData) {
     document.getElementById("latestVoltage").textContent = ` ${latestData.voltage.toFixed(2)} (V)`;
     document.getElementById("latestCurrent").textContent = ` ${latestData.current.toFixed(2)} (A)`;
-    document.getElementById("latestSOC").textContent = ` ${(latestData.soc).toFixed(2)} (%)`;
+    document.getElementById("latestSOC").textContent = ` ${(latestData.soc * 100).toFixed(2)} (%)`;
     document.getElementById("latestTemp").textContent = ` ${latestData.temperature.toFixed(2)} (°C)`;
 }
 
