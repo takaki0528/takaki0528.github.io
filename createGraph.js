@@ -3,7 +3,7 @@ var ba_ids = ["ba0", "ba1", "ba2", "ba3"];
 var selectedBaId = "Ave";  // 初期値は Ave
 var hosturl = "https://4bbamgyg6f.execute-api.ap-northeast-1.amazonaws.com/bms";
 var apiurl = hosturl + "/datas/" + device_name;
-var retryInterval = 60000;
+var retryInterval = 10000;
 var windowSize = 1;  // 平均化処理のウィンドウサイズ
 
 function createChart() {
@@ -115,11 +115,111 @@ function drawChartsForAverage(vals) {
     drawChart("tempChart", "Average Temperature (C)", temp_data);
 }
 
+// すべてのバッテリーのデータを同時に描画
+function drawChartsForAllBA(vals) {
+    var voltage_data = {}, current_data = {}, soc_data = {}, temp_data = {};
+
+    // 各バッテリーのデータを初期化
+    ba_ids.forEach(function (ba_id) {
+        voltage_data[ba_id] = [];
+        current_data[ba_id] = [];
+        soc_data[ba_id] = [];
+        temp_data[ba_id] = [];
+    });
+
+    // 各バッテリーのデータを収集
+    for (var i = 0; i < vals.length; i++) {
+        ba_ids.forEach(function (ba_id) {
+            voltage_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].voltage]);
+            current_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].current]);
+            soc_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc * 100]);
+            temp_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].temperature]);
+        });
+    }
+
+    // 平均化処理
+    ba_ids.forEach(function (ba_id) {
+        voltage_data[ba_id] = calculateMovingAverage(voltage_data[ba_id], windowSize);
+        current_data[ba_id] = calculateMovingAverage(current_data[ba_id], windowSize);
+        soc_data[ba_id] = calculateMovingAverage(soc_data[ba_id], windowSize);
+        temp_data[ba_id] = calculateMovingAverage(temp_data[ba_id], windowSize);
+    });
+
+    drawChartForAll("voltageChart", "Voltage (V)", voltage_data);
+    drawChartForAll("currentChart", "Current (A)", current_data);
+    drawChartForAll("socChart", "SOC (%)", soc_data);
+    drawChartForAll("tempChart", "Temperature (C)", temp_data);
+}
+
+// すべてのバッテリーを同時に描画するための関数
+function drawChartForAll(chartId, yAxisTitle, data) {
+    // 既存のグラフインスタンスがあれば破棄
+    if (echarts.getInstanceByDom(document.getElementById(chartId))) {
+        echarts.dispose(document.getElementById(chartId));  // グラフをクリア
+    }
+
+    var series = [];
+    ba_ids.forEach(function (ba_id) {
+        series.push({
+            name: ba_id,
+            type: 'line',
+            data: data[ba_id].map(item => item[1]),  // 各バッテリーのデータを使用
+            tooltip: {
+                valueFormatter: function (value) {
+                    return value.toFixed(3);
+                }
+            }
+        });
+    });
+
+    var chart = echarts.init(document.getElementById(chartId));
+    chart.setOption({
+        title: {
+            text: yAxisTitle + ' Over Time',
+            left: 'center',
+            top: '5%',
+            textStyle: {
+                fontSize: 16,
+                padding: [10, 0, 0, 0]
+            }
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                let result = params[0].axisValueLabel + '<br/>';
+                params.forEach(item => {
+                    result += item.marker + ' ' + item.seriesName + ': ' + item.data.toFixed(3) + '<br/>';
+                });
+                return result;
+            }
+        },
+        legend: {
+            data: ba_ids,
+            top: '10%',
+            right: 'center'
+        },
+        grid: {
+            top: '20%'
+        },
+        xAxis: { type: 'category', data: data[ba_ids[0]].map(item => item[0]) },
+        yAxis: {
+            type: 'value',
+            name: yAxisTitle,
+            scale: true
+        },
+        series: series
+    });
+
+    window.addEventListener('resize', function () {
+        chart.resize();
+    });
+}
+
 // 最新の平均値を表示するための関数
 function updateLatestValues(latestData) {
     document.getElementById("latestVoltage").textContent = ` ${latestData.voltage.toFixed(2)} V`;
     document.getElementById("latestCurrent").textContent = ` ${latestData.current.toFixed(2)} A`;
-    document.getElementById("latestSOC").textContent = ` ${(latestData.soc * 100).toFixed(2)} %`;
+    document.getElementById("latestSOC").textContent = ` ${(latestData.soc).toFixed(2)} %`;
     document.getElementById("latestTemp").textContent = ` ${latestData.temperature.toFixed(2)} °C`;
 }
 
