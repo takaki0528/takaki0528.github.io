@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,52 +12,53 @@
     <style>
         .graph-container {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .charts-wrapper {
-            flex: 0 0 70%;  /* 左側のグラフエリアの幅 */
+        .graph-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .graph {
+            width: 70%;
+            height: 50px;
+            /* グラフの高さを50pxに設定 */
         }
 
         .latest-values {
-            flex: 0 0 30%;  /* 右側の最新の値エリアの幅 */
-            padding-left: 20px;
-        }
-
-        .latest-values h3 {
-            margin-top: 0;
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 10px;
         }
 
         .latest-values p {
-            font-size: 1.5em;  /* 大きく表示 */
-        }
-
-        .graph-container > div {
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 1000px) {
-            .charts-wrapper {
-                width: 100%;
-            }
-
-            .latest-values {
-                width: 100%;
-            }
+            font-size: 1.25em;
+            /* グラフ高さ50pxの50%である25pxに相当する */
+            margin: 0;
         }
 
         @media (max-width: 480px) {
-            .charts-wrapper {
+            .graph-row {
+                flex-direction: column;
+            }
+
+            .graph,
+            .latest-values {
                 width: 100%;
             }
 
-            .latest-values {
-                width: 100%;
+            .latest-values p {
+                font-size: 1em;
+                /* 小さいデバイスでは少し小さくする */
             }
         }
     </style>
 </head>
+
 <body>
     <div>
         <!-- バッテリーID選択用のドロップダウン -->
@@ -72,23 +74,33 @@
     </div>
 
     <div class="graph-container">
-        <!-- 左側のグラフを表示するエリア -->
-        <div class="charts-wrapper">
-            <div id="voltageChart" style="height: 450px;"></div>
-            <div id="currentChart" style="height: 450px;"></div>
-            <div id="socChart" style="height: 450px;"></div>
-            <div id="tempChart" style="height: 450px;"></div>
+        <div class="graph-row">
+            <div id="voltageChart" class="graph"></div>
+            <div class="latest-values">
+                <p id="latestVoltage">Voltage: N/A</p>
+            </div>
         </div>
-        <!-- 右側の最新の値を表示するエリア -->
-        <div class="latest-values">
-            <h3>Latest Values</h3>
-            <p id="latestVoltage">Voltage: N/A</p>
-            <p id="latestCurrent">Current: N/A</p>
-            <p id="latestSOC">SOC: N/A</p>
-            <p id="latestTemp">Temperature: N/A</p>
+        <div class="graph-row">
+            <div id="currentChart" class="graph"></div>
+            <div class="latest-values">
+                <p id="latestCurrent">Current: N/A</p>
+            </div>
+        </div>
+        <div class="graph-row">
+            <div id="socChart" class="graph"></div>
+            <div class="latest-values">
+                <p id="latestSOC">SOC: N/A</p>
+            </div>
+        </div>
+        <div class="graph-row">
+            <div id="tempChart" class="graph"></div>
+            <div class="latest-values">
+                <p id="latestTemp">Temperature: N/A</p>
+            </div>
         </div>
     </div>
 
     <script src="createGraph.js"></script>
 </body>
+
 </html>

@@ -8,7 +8,7 @@ var windowSize = 1;  // 平均化処理のウィンドウサイズ
 
 function createChart() {
     reqGet();  // まず一度実行
-    setInterval(function() {
+    setInterval(function () {
         reqGet();  // 60秒ごとに再度データ取得
     }, retryInterval);
 }
@@ -25,7 +25,7 @@ function reqGet() {
     $.ajax({
         url: apiurl,
         method: "GET",
-        success: function(data) {
+        success: function (data) {
             if (selectedBaId === "Ave") {
                 drawChartsForAverage(data[device_name]);
             } else if (selectedBaId === "All") {
@@ -34,7 +34,7 @@ function reqGet() {
                 drawChartsForSelectedBA(data[device_name], selectedBaId);
             }
         },
-        error: function(jqXHR, textStatus, errorThrown) {
+        error: function (jqXHR, textStatus, errorThrown) {
             console.log("Error: " + textStatus + " " + errorThrown);
         }
     });
@@ -75,7 +75,7 @@ function drawChartsForAverage(vals) {
 
     for (var i = 0; i < vals.length; i++) {
         var avg_voltage = 0, avg_current = 0, avg_soc = 0, avg_temp = 0;
-        ba_ids.forEach(function(ba_id) {
+        ba_ids.forEach(function (ba_id) {
             avg_voltage += vals[i][ba_id].voltage;
             avg_current += vals[i][ba_id].current;
             avg_soc += vals[i][ba_id].soc * 100;
@@ -156,7 +156,7 @@ function drawChart(chartId, yAxisTitle, data) {
         },
         tooltip: {
             trigger: 'axis',
-            formatter: function(params) {
+            formatter: function (params) {
                 let result = params[0].axisValueLabel + '<br/>';
                 params.forEach(item => {
                     result += item.marker + ' ' + item.seriesName + ': ' + item.data.toFixed(3) + '<br/>';
@@ -183,14 +183,14 @@ function drawChart(chartId, yAxisTitle, data) {
             type: 'line',
             data: data.map(item => item[1]),
             tooltip: {
-                valueFormatter: function(value) {
+                valueFormatter: function (value) {
                     return value.toFixed(3);
                 }
             }
         }]
     });
 
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
         chart.resize();
     });
 }
