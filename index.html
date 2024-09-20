@@ -48,14 +48,24 @@
                 flex-direction: column;
             }
 
-            .graph,
+            .graph {
+                width: 70%;
+                height: 90px;
+                /* グラフの高さを50pxに設定 */
+            }
+
             .latest-values {
-                width: 100%;
+                width: 30%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                padding-left: 2px;
             }
 
             .latest-values p {
-                font-size: 1em;
-                /* 小さいデバイスでは少し小さくする */
+                font-size: 4em;
+                /* グラフ高さ50pxの50%である25pxに相当する */
+                margin: 0;
             }
         }
     </style>
