@@ -3,12 +3,12 @@ var ba_ids = ["ba0", "ba1", "ba2", "ba3"];
 var selectedBaId = "Ave";  // 初期値は Ave
 var hosturl = "https://4bbamgyg6f.execute-api.ap-northeast-1.amazonaws.com/bms";
 var apiurl = hosturl + "/datas/" + device_name;
-var retryInterval = 10000;
+var retryInterval = 60000;
 
 function createChart() {
     reqGet();  // まず一度実行
     setInterval(function () {
-        reqGet();  // 10秒ごとに再度データ取得
+        reqGet();  // 60秒ごとに再度データ取得
     }, retryInterval);
 }
 
@@ -105,6 +105,7 @@ function drawChartsForAverage(vals) {
 // すべてのバッテリーのデータを同時に描画
 function drawChartsForAllBA(vals) {
     var voltage_data = {}, current_data = {}, soc_data = {}, temp_data = {};
+    var xAxisData = []; // X軸データ（共通のtimestampを持たせる）
 
     // 各バッテリーのデータを初期化
     ba_ids.forEach(function (ba_id) {
@@ -121,17 +122,22 @@ function drawChartsForAllBA(vals) {
             current_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].current]);
             soc_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc * 100]);
             temp_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].temperature]);
+
+            if (xAxisData.length === 0) {
+                // X軸データを初めてセット
+                xAxisData.push(vals[i].timestamp);
+            }
         });
     }
 
-    drawChartForAll("voltageChart", "Voltage (V)", voltage_data);
-    drawChartForAll("currentChart", "Current (A)", current_data);
-    drawChartForAll("socChart", "SOC (%)", soc_data);
-    drawChartForAll("tempChart", "Temperature (℃)", temp_data);
+    drawChartForAll("voltageChart", "Voltage (V)", voltage_data, xAxisData);
+    drawChartForAll("currentChart", "Current (A)", current_data, xAxisData);
+    drawChartForAll("socChart", "SOC (%)", soc_data, xAxisData);
+    drawChartForAll("tempChart", "Temperature (℃)", temp_data, xAxisData);
 }
 
 // すべてのバッテリーを同時に描画するための関数
-function drawChartForAll(chartId, yAxisTitle, data) {
+function drawChartForAll(chartId, yAxisTitle, data, xAxisData) {
     // 既存のグラフインスタンスがあれば破棄
     if (echarts.getInstanceByDom(document.getElementById(chartId))) {
         echarts.dispose(document.getElementById(chartId));  // グラフをクリア
@@ -180,7 +186,10 @@ function drawChartForAll(chartId, yAxisTitle, data) {
         grid: {
             top: '20%'
         },
-        xAxis: { type: 'category', data: data[ba_ids[0]].map(item => item[0]) },
+        xAxis: {
+            type: 'category',
+            data: xAxisData  // 共通のtimestampを使用
+        },
         yAxis: {
             type: 'value',
             name: yAxisTitle,
