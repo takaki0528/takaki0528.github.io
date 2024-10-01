@@ -7,7 +7,7 @@ var retryInterval = 60000;
 
 function createChart() {
     reqGet();  // まず一度実行
-    setInterval(function() {
+    setInterval(function () {
         reqGet();  // 60秒ごとに再度データ取得
     }, retryInterval);
 }
@@ -24,7 +24,7 @@ function reqGet() {
     $.ajax({
         url: apiurl,
         method: "GET",
-        success: function(data) {
+        success: function (data) {
             if (selectedBaId === "Ave") {
                 drawChartsForAverage(data[device_name]);
             } else if (selectedBaId === "All") {
@@ -33,7 +33,7 @@ function reqGet() {
                 drawChartsForSelectedBA(data[device_name], selectedBaId);
             }
         },
-        error: function(jqXHR, textStatus, errorThrown) {
+        error: function (jqXHR, textStatus, errorThrown) {
             console.log("Error: " + textStatus + " " + errorThrown);
         }
     });
@@ -59,7 +59,7 @@ function drawChartsForSelectedBA(vals, ba_id) {
     drawChart("voltageChart", "Voltage (V)", voltage_data);
     drawChart("currentChart", "Current (A)", current_data);
     drawChart("socChart", "SOC (%)", soc_data);
-    drawChart("tempChart", "Temperature (C)", temp_data);
+    drawChart("tempChart", "Temperature (℃)", temp_data);
 }
 
 // 4つのバッテリーの平均データを描画
@@ -68,7 +68,7 @@ function drawChartsForAverage(vals) {
 
     for (var i = 0; i < vals.length; i++) {
         var avg_voltage = 0, avg_current = 0, avg_soc = 0, avg_temp = 0;
-        ba_ids.forEach(function(ba_id) {
+        ba_ids.forEach(function (ba_id) {
             avg_voltage += vals[i][ba_id].voltage;
             avg_current += vals[i][ba_id].current;
             avg_soc += vals[i][ba_id].soc * 100;
@@ -99,15 +99,115 @@ function drawChartsForAverage(vals) {
     drawChart("voltageChart", "Average Voltage (V)", voltage_data);
     drawChart("currentChart", "Average Current (A)", current_data);
     drawChart("socChart", "Average SOC (%)", soc_data);
-    drawChart("tempChart", "Average Temperature (C)", temp_data);
+    drawChart("tempChart", "Average Temperature (℃)", temp_data);
+}
+
+// すべてのバッテリーのデータを同時に描画
+function drawChartsForAllBA(vals) {
+    var voltage_data = {}, current_data = {}, soc_data = {}, temp_data = {};
+
+    // 各バッテリーのデータを初期化
+    ba_ids.forEach(function (ba_id) {
+        voltage_data[ba_id] = [];
+        current_data[ba_id] = [];
+        soc_data[ba_id] = [];
+        temp_data[ba_id] = [];
+    });
+
+    // 各バッテリーのデータを収集
+    for (var i = 0; i < vals.length; i++) {
+        ba_ids.forEach(function (ba_id) {
+            voltage_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].voltage]);
+            current_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].current]);
+            soc_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc * 100]);
+            temp_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].temperature]);
+        });
+    }
+
+    // 平均化処理
+    ba_ids.forEach(function (ba_id) {
+        voltage_data[ba_id] = calculateMovingAverage(voltage_data[ba_id], windowSize);
+        current_data[ba_id] = calculateMovingAverage(current_data[ba_id], windowSize);
+        soc_data[ba_id] = calculateMovingAverage(soc_data[ba_id], windowSize);
+        temp_data[ba_id] = calculateMovingAverage(temp_data[ba_id], windowSize);
+    });
+
+    drawChartForAll("voltageChart", "Voltage (V)", voltage_data);
+    drawChartForAll("currentChart", "Current (A)", current_data);
+    drawChartForAll("socChart", "SOC (%)", soc_data);
+    drawChartForAll("tempChart", "Temperature (℃)", temp_data);
+}
+
+// すべてのバッテリーを同時に描画するための関数
+function drawChartForAll(chartId, yAxisTitle, data) {
+    // 既存のグラフインスタンスがあれば破棄
+    if (echarts.getInstanceByDom(document.getElementById(chartId))) {
+        echarts.dispose(document.getElementById(chartId));  // グラフをクリア
+    }
+
+    var series = [];
+    ba_ids.forEach(function (ba_id) {
+        series.push({
+            name: ba_id,
+            type: 'line',
+            data: data[ba_id].map(item => item[1]),  // 各バッテリーのデータを使用
+            tooltip: {
+                valueFormatter: function (value) {
+                    return value.toFixed(3);
+                }
+            }
+        });
+    });
+
+    var chart = echarts.init(document.getElementById(chartId));
+    chart.setOption({
+        title: {
+            text: yAxisTitle + ' Over Time',
+            left: 'center',
+            top: '5%',
+            textStyle: {
+                fontSize: 16,
+                padding: [10, 0, 0, 0]
+            }
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                let result = params[0].axisValueLabel + '<br/>';
+                params.forEach(item => {
+                    result += item.marker + ' ' + item.seriesName + ': ' + item.data.toFixed(3) + '<br/>';
+                });
+                return result;
+            }
+        },
+        legend: {
+            data: ba_ids,
+            top: '10%',
+            right: 'center'
+        },
+        grid: {
+            top: '20%'
+        },
+        xAxis: { type: 'category', data: data[ba_ids[0]].map(item => item[0]) },
+        yAxis: {
+            type: 'value',
+            name: yAxisTitle,
+            scale: true
+        },
+        series: series
+    });
+
+    window.addEventListener('resize', function () {
+        chart.resize();
+    });
 }
 
 // 最新の平均値を表示するための関数
 function updateLatestValues(latestData) {
-    document.getElementById("latestVoltage").textContent = `Voltage: ${latestData.voltage.toFixed(2)} V`;
-    document.getElementById("latestCurrent").textContent = `Current: ${latestData.current.toFixed(2)} A`;
-    document.getElementById("latestSOC").textContent = `SOC: ${(latestData.soc).toFixed(2)} %`;
-    document.getElementById("latestTemp").textContent = `Temperature: ${latestData.temperature.toFixed(2)} °C`;
+    document.getElementById("latestVoltage").textContent = ` ${latestData.voltage.toFixed(2)} (V)`;
+    document.getElementById("latestCurrent").textContent = ` ${latestData.current.toFixed(2)} (A)`;
+    document.getElementById("latestSOC").textContent = ` ${(latestData.soc * 100).toFixed(2)} (%)`;
+    document.getElementById("latestTemp").textContent = ` ${latestData.temperature.toFixed(2)} (°C)`;
 }
 
 // 単一のバッテリーや平均データを描画するための基本的な関数
@@ -130,7 +230,7 @@ function drawChart(chartId, yAxisTitle, data) {
         },
         tooltip: {
             trigger: 'axis',
-            formatter: function(params) {
+            formatter: function (params) {
                 let result = params[0].axisValueLabel + '<br/>';
                 params.forEach(item => {
                     result += item.marker + ' ' + item.seriesName + ': ' + item.data.toFixed(3) + '<br/>';
@@ -157,14 +257,14 @@ function drawChart(chartId, yAxisTitle, data) {
             type: 'line',
             data: data.map(item => item[1]),
             tooltip: {
-                valueFormatter: function(value) {
+                valueFormatter: function (value) {
                     return value.toFixed(3);
                 }
             }
         }]
     });
 
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
         chart.resize();
     });
 }
