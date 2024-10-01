@@ -105,7 +105,7 @@ function drawChartsForAverage(vals) {
 // すべてのバッテリーのデータを同時に描画
 function drawChartsForAllBA(vals) {
     var voltage_data = {}, current_data = {}, soc_data = {}, temp_data = {};
-    var xAxisData = new Set(); // X軸データ（共通のtimestampを持たせる）
+    var xAxisData = new Set(); // Setで一意のtimestampを収集
 
     // 各バッテリーのデータを初期化
     ba_ids.forEach(function (ba_id) {
@@ -123,21 +123,41 @@ function drawChartsForAllBA(vals) {
             current_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].current]);
             soc_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc]);
             temp_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].temperature]);
-
-            if (xAxisData.length === 0) {
-                // X軸データを初めてセット
-                xAxisData.push(vals[i].timestamp);
-            }
         });
     }
 
     // xAxisDataをソートして配列に変換
     xAxisData = Array.from(xAxisData).sort();
 
+    // 各バッテリーのデータをxAxisDataに基づいて統合
+    ba_ids.forEach(function (ba_id) {
+        voltage_data[ba_id] = fillDataGaps(voltage_data[ba_id], xAxisData);
+        current_data[ba_id] = fillDataGaps(current_data[ba_id], xAxisData);
+        soc_data[ba_id] = fillDataGaps(soc_data[ba_id], xAxisData);
+        temp_data[ba_id] = fillDataGaps(temp_data[ba_id], xAxisData);
+    });
+
     drawChartForAll("voltageChart", "Voltage (V)", voltage_data, xAxisData);
     drawChartForAll("currentChart", "Current (A)", current_data, xAxisData);
     drawChartForAll("socChart", "SOC (%)", soc_data, xAxisData);
     drawChartForAll("tempChart", "Temperature (℃)", temp_data, xAxisData);
+}
+
+// timestampが異なる場合にデータのギャップをnullで埋める関数
+function fillDataGaps(data, xAxisData) {
+    var filledData = [];
+    var dataIndex = 0;
+    
+    xAxisData.forEach(function (timestamp) {
+        if (dataIndex < data.length && data[dataIndex][0] === timestamp) {
+            filledData.push(data[dataIndex]);  // timestampが一致すればそのデータを追加
+            dataIndex++;
+        } else {
+            filledData.push([timestamp, null]);  // 一致しない場合はnullで埋める
+        }
+    });
+
+    return filledData;
 }
 
 // すべてのバッテリーを同時に描画するための関数
