@@ -123,6 +123,11 @@ function drawChartsForAllBA(vals) {
             current_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].current]);
             soc_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc]);
             temp_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].temperature]);
+
+            if (xAxisData.length === 0) {
+                // X軸データを初めてセット
+                xAxisData.push(vals[i].timestamp);
+            }
         });
     }
 
