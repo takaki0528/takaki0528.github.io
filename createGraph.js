@@ -8,7 +8,7 @@ var retryInterval = 10000;
 function createChart() {
     reqGet();  // まず一度実行
     setInterval(function () {
-        reqGet();  // 60秒ごとに再度データ取得
+        reqGet();  // 10秒ごとに再度データ取得
     }, retryInterval);
 }
 
@@ -105,7 +105,7 @@ function drawChartsForAverage(vals) {
 // すべてのバッテリーのデータを同時に描画
 function drawChartsForAllBA(vals) {
     var voltage_data = {}, current_data = {}, soc_data = {}, temp_data = {};
-    var xAxisData = []; // X軸データ（共通のtimestampを持たせる）
+    var xAxisData = new Set(); // X軸データ（共通のtimestampを持たせる）
 
     // 各バッテリーのデータを初期化
     ba_ids.forEach(function (ba_id) {
@@ -118,17 +118,16 @@ function drawChartsForAllBA(vals) {
     // 各バッテリーのデータを収集
     for (var i = 0; i < vals.length; i++) {
         ba_ids.forEach(function (ba_id) {
+            xAxisData.add(vals[i].timestamp);  // すべてのtimestampを収集
             voltage_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].voltage]);
             current_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].current]);
             soc_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc]);
             temp_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].temperature]);
-
-            if (xAxisData.length === 0) {
-                // X軸データを初めてセット
-                xAxisData.push(vals[i].timestamp);
-            }
         });
     }
+
+    // xAxisDataをソートして配列に変換
+    xAxisData = Array.from(xAxisData).sort();
 
     drawChartForAll("voltageChart", "Voltage (V)", voltage_data, xAxisData);
     drawChartForAll("currentChart", "Current (A)", current_data, xAxisData);
