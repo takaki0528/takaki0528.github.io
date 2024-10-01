@@ -126,7 +126,7 @@ function drawChartsForAllBA(vals) {
 }
 
 // すべてのバッテリーの real と fake を同時に描画する関数
-function drawDoubleLineChartForAll(chartId, yAxisTitle, realData, fakeData, xAxisData) {
+function drawChartsForAll(chartId, yAxisTitle, realData, fakeData, xAxisData) {
     // 既存のグラフインスタンスがあれば破棄
     if (echarts.getInstanceByDom(document.getElementById(chartId))) {
         echarts.dispose(document.getElementById(chartId));  // グラフをクリア
