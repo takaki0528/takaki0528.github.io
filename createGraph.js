@@ -113,20 +113,6 @@ function drawChartsForAllBA(vals) {
     // xAxisDataをソートして配列に変換
     xAxisData = Array.from(xAxisData).sort();
 
-    // 各バッテリーのデータをxAxisDataに基づいて統合
-    ba_ids.forEach(function (ba_id) {
-        voltage_data[ba_id] = fillDataGaps(voltage_data[ba_id], xAxisData);
-        current_data[ba_id] = fillDataGaps(current_data[ba_id], xAxisData);
-        soc_data[ba_id] = fillDataGaps(soc_data[ba_id], xAxisData);
-        temp_data[ba_id] = fillDataGaps(temp_data[ba_id], xAxisData);
-        r0_real_data[ba_id] = fillDataGaps(r0_real_data[ba_id], xAxisData);
-        r0_fake_data[ba_id] = fillDataGaps(r0_fake_data[ba_id], xAxisData);
-        r1_real_data[ba_id] = fillDataGaps(r1_real_data[ba_id], xAxisData);
-        r1_fake_data[ba_id] = fillDataGaps(r1_fake_data[ba_id], xAxisData);
-        tau1_real_data[ba_id] = fillDataGaps(tau1_real_data[ba_id], xAxisData);
-        tau1_fake_data[ba_id] = fillDataGaps(tau1_fake_data[ba_id], xAxisData);
-    });
-
     // 各データを描画
     drawChartForAll("voltageChart", "Voltage (V)", voltage_data, xAxisData);
     drawChartForAll("currentChart", "Current (A)", current_data, xAxisData);
@@ -215,6 +201,7 @@ function drawDoubleLineChartForAll(chartId, yAxisTitle, realData, fakeData, xAxi
         chart.resize();
     });
 }
+
 
 
 // 4つのバッテリーの平均データを描画
