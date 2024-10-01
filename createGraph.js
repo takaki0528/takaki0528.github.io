@@ -4,7 +4,6 @@ var selectedBaId = "Ave";  // 初期値は Ave
 var hosturl = "https://4bbamgyg6f.execute-api.ap-northeast-1.amazonaws.com/bms";
 var apiurl = hosturl + "/datas/" + device_name;
 var retryInterval = 60000;
-var windowSize = 1;  // 平均化処理のウィンドウサイズ
 
 function createChart() {
     reqGet();  // まず一度実行
@@ -51,12 +50,6 @@ function drawChartsForSelectedBA(vals, ba_id) {
         temp_data.push([vals[i].timestamp, vals[i][ba_id].temperature]);
     }
 
-    // 平均化処理
-    voltage_data = calculateMovingAverage(voltage_data, windowSize);
-    current_data = calculateMovingAverage(current_data, windowSize);
-    soc_data = calculateMovingAverage(soc_data, windowSize);
-    temp_data = calculateMovingAverage(temp_data, windowSize);
-
     // 最新の値を更新
     if (vals.length > 0) {
         var latestData = vals[vals.length - 1][ba_id];
@@ -92,12 +85,6 @@ function drawChartsForAverage(vals) {
         temp_data.push([vals[i].timestamp, avg_temp]);
     }
 
-    // 平均化処理
-    voltage_data = calculateMovingAverage(voltage_data, windowSize);
-    current_data = calculateMovingAverage(current_data, windowSize);
-    soc_data = calculateMovingAverage(soc_data, windowSize);
-    temp_data = calculateMovingAverage(temp_data, windowSize);
-
     // 最新の平均値を更新
     if (vals.length > 0) {
         var latestAverageData = {
@@ -121,19 +108,6 @@ function updateLatestValues(latestData) {
     document.getElementById("latestCurrent").textContent = `Current: ${latestData.current.toFixed(2)} A`;
     document.getElementById("latestSOC").textContent = `SOC: ${(latestData.soc).toFixed(2)} %`;
     document.getElementById("latestTemp").textContent = `Temperature: ${latestData.temperature.toFixed(2)} °C`;
-}
-
-// 平均化処理
-function calculateMovingAverage(data, windowSize) {
-    let result = [];
-    for (let i = 0; i < data.length - windowSize + 1; i++) {
-        let sum = 0;
-        for (let j = i; j < i + windowSize; j++) {
-            sum += data[j][1];
-        }
-        result.push([data[i][0], sum / windowSize]);
-    }
-    return result;
 }
 
 // 単一のバッテリーや平均データを描画するための基本的な関数
