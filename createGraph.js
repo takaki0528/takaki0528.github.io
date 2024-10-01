@@ -124,14 +124,6 @@ function drawChartsForAllBA(vals) {
         });
     }
 
-    // 平均化処理
-    ba_ids.forEach(function (ba_id) {
-        voltage_data[ba_id] = calculateMovingAverage(voltage_data[ba_id], windowSize);
-        current_data[ba_id] = calculateMovingAverage(current_data[ba_id], windowSize);
-        soc_data[ba_id] = calculateMovingAverage(soc_data[ba_id], windowSize);
-        temp_data[ba_id] = calculateMovingAverage(temp_data[ba_id], windowSize);
-    });
-
     drawChartForAll("voltageChart", "Voltage (V)", voltage_data);
     drawChartForAll("currentChart", "Current (A)", current_data);
     drawChartForAll("socChart", "SOC (%)", soc_data);
@@ -202,11 +194,11 @@ function drawChartForAll(chartId, yAxisTitle, data) {
     });
 }
 
-// 最新の平均値を表示するための関数
+// 最新の値を表示するための関数
 function updateLatestValues(latestData) {
     document.getElementById("latestVoltage").textContent = ` ${latestData.voltage.toFixed(2)} (V)`;
     document.getElementById("latestCurrent").textContent = ` ${latestData.current.toFixed(2)} (A)`;
-    document.getElementById("latestSOC").textContent = ` ${(latestData.soc * 100).toFixed(2)} (%)`;
+    document.getElementById("latestSOC").textContent = ` ${latestData.soc.toFixed(2)} (%)`;
     document.getElementById("latestTemp").textContent = ` ${latestData.temperature.toFixed(2)} (°C)`;
 }
 
