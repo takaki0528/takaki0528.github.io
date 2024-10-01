@@ -3,12 +3,12 @@ var ba_ids = ["ba0", "ba1", "ba2", "ba3"];
 var selectedBaId = "Ave";  // 初期値は Ave
 var hosturl = "https://4bbamgyg6f.execute-api.ap-northeast-1.amazonaws.com/bms";
 var apiurl = hosturl + "/datas/" + device_name;
-var retryInterval = 60000;
+var retryInterval = 10000;
 
 function createChart() {
     reqGet();  // まず一度実行
     setInterval(function () {
-        reqGet();  // 60秒ごとに再度データ取得
+        reqGet();  // 10秒ごとに再度データ取得
     }, retryInterval);
 }
 
