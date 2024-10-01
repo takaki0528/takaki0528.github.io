@@ -3,7 +3,7 @@ var ba_ids = ["ba0", "ba1", "ba2", "ba3"];
 var selectedBaId = "Ave";  // 初期値は Ave
 var hosturl = "https://4bbamgyg6f.execute-api.ap-northeast-1.amazonaws.com/bms";
 var apiurl = hosturl + "/datas/" + device_name;
-var retryInterval = 60000;
+var retryInterval = 10000;
 
 function createChart() {
     reqGet();  // まず一度実行
@@ -46,7 +46,7 @@ function drawChartsForSelectedBA(vals, ba_id) {
     for (var i = 0; i < vals.length; i++) {
         voltage_data.push([vals[i].timestamp, vals[i][ba_id].voltage]);
         current_data.push([vals[i].timestamp, vals[i][ba_id].current]);
-        soc_data.push([vals[i].timestamp, vals[i][ba_id].soc * 100]);
+        soc_data.push([vals[i].timestamp, vals[i][ba_id].soc]);
         temp_data.push([vals[i].timestamp, vals[i][ba_id].temperature]);
     }
 
@@ -71,7 +71,7 @@ function drawChartsForAverage(vals) {
         ba_ids.forEach(function (ba_id) {
             avg_voltage += vals[i][ba_id].voltage;
             avg_current += vals[i][ba_id].current;
-            avg_soc += vals[i][ba_id].soc * 100;
+            avg_soc += vals[i][ba_id].soc;
             avg_temp += vals[i][ba_id].temperature;
         });
         avg_voltage /= ba_ids.length;
@@ -90,7 +90,7 @@ function drawChartsForAverage(vals) {
         var latestAverageData = {
             voltage: voltage_data[voltage_data.length - 1][1],
             current: current_data[current_data.length - 1][1],
-            soc: soc_data[soc_data.length - 1][1] / 100,  // SOCは%表記なので100で割る
+            soc: soc_data[soc_data.length - 1][1],
             temperature: temp_data[temp_data.length - 1][1]
         };
         updateLatestValues(latestAverageData);  // 平均値を更新
@@ -120,7 +120,7 @@ function drawChartsForAllBA(vals) {
         ba_ids.forEach(function (ba_id) {
             voltage_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].voltage]);
             current_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].current]);
-            soc_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc * 100]);
+            soc_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc]);
             temp_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].temperature]);
 
             if (xAxisData.length === 0) {
@@ -207,7 +207,7 @@ function drawChartForAll(chartId, yAxisTitle, data, xAxisData) {
 function updateLatestValues(latestData) {
     document.getElementById("latestVoltage").textContent = ` ${latestData.voltage.toFixed(2)} (V)`;
     document.getElementById("latestCurrent").textContent = ` ${latestData.current.toFixed(2)} (A)`;
-    document.getElementById("latestSOC").textContent = ` ${(latestData.soc*100).toFixed(2)} (%)`;
+    document.getElementById("latestSOC").textContent = ` ${(latestData.soc).toFixed(2)} (%)`;
     document.getElementById("latestTemp").textContent = ` ${latestData.temperature.toFixed(2)} (°C)`;
 }
 
