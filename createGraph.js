@@ -76,7 +76,6 @@ function drawChartsForSelectedBA(vals, ba_id) {
 
 function drawChartsForAllBA(vals) {
     var voltage_data = {}, current_data = {}, soc_data = {}, temp_data = {};
-    var r0_real_data = {}, r0_fake_data = {}, r1_real_data = {}, r1_fake_data = {}, tau1_real_data = {}, tau1_fake_data = {};
     var xAxisData = new Set(); // Setで一意のtimestampを収集
 
     // 各バッテリーのデータを初期化
@@ -85,12 +84,6 @@ function drawChartsForAllBA(vals) {
         current_data[ba_id] = [];
         soc_data[ba_id] = [];
         temp_data[ba_id] = [];
-        r0_real_data[ba_id] = [];
-        r0_fake_data[ba_id] = [];
-        r1_real_data[ba_id] = [];
-        r1_fake_data[ba_id] = [];
-        tau1_real_data[ba_id] = [];
-        tau1_fake_data[ba_id] = [];
     });
 
     // 各バッテリーのデータを収集
@@ -101,32 +94,45 @@ function drawChartsForAllBA(vals) {
             current_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].current]);
             soc_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc]);
             temp_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].temperature]);
-            r0_real_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].r0.real]);
-            r0_fake_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].r0.fake]);
-            r1_real_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].r1.real]);
-            r1_fake_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].r1.fake]);
-            tau1_real_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].tau1.real]);
-            tau1_fake_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].tau1.fake]);
         });
     }
 
     // xAxisDataをソートして配列に変換
     xAxisData = Array.from(xAxisData).sort();
 
-    // 各データを描画
+    // 各バッテリーのデータをxAxisDataに基づいて統合
+    ba_ids.forEach(function (ba_id) {
+        voltage_data[ba_id] = fillDataGaps(voltage_data[ba_id], xAxisData);
+        current_data[ba_id] = fillDataGaps(current_data[ba_id], xAxisData);
+        soc_data[ba_id] = fillDataGaps(soc_data[ba_id], xAxisData);
+        temp_data[ba_id] = fillDataGaps(temp_data[ba_id], xAxisData);
+    });
+
     drawChartForAll("voltageChart", "Voltage (V)", voltage_data, xAxisData);
     drawChartForAll("currentChart", "Current (A)", current_data, xAxisData);
     drawChartForAll("socChart", "SOC (%)", soc_data, xAxisData);
     drawChartForAll("tempChart", "Temperature (℃)", temp_data, xAxisData);
-
-    // r0, r1, tau1 の real と fake をそれぞれのグラフに表示
-    drawDoubleLineChartForAll("r0Chart", "R0", r0_real_data, r0_fake_data, xAxisData);
-    drawDoubleLineChartForAll("r1Chart", "R1", r1_real_data, r1_fake_data, xAxisData);
-    drawDoubleLineChartForAll("tau1Chart", "Tau1", tau1_real_data, tau1_fake_data, xAxisData);
 }
 
-// すべてのバッテリーの real と fake を同時に描画する関数
-function drawChartsForAll(chartId, yAxisTitle, realData, fakeData, xAxisData) {
+// timestampが異なる場合にデータのギャップをnullで埋める関数
+function fillDataGaps(data, xAxisData) {
+    var filledData = [];
+    var dataIndex = 0;
+    
+    xAxisData.forEach(function (timestamp) {
+        if (dataIndex < data.length && data[dataIndex][0] === timestamp) {
+            filledData.push(data[dataIndex]);  // timestampが一致すればそのデータを追加
+            dataIndex++;
+        } else {
+            filledData.push([timestamp, null]);  // 一致しない場合はnullで埋める
+        }
+    });
+
+    return filledData;
+}
+
+// すべてのバッテリーを同時に描画するための関数
+function drawChartForAll(chartId, yAxisTitle, data, xAxisData) {
     // 既存のグラフインスタンスがあれば破棄
     if (echarts.getInstanceByDom(document.getElementById(chartId))) {
         echarts.dispose(document.getElementById(chartId));  // グラフをクリア
@@ -135,19 +141,9 @@ function drawChartsForAll(chartId, yAxisTitle, realData, fakeData, xAxisData) {
     var series = [];
     ba_ids.forEach(function (ba_id) {
         series.push({
-            name: ba_id + ' real',
+            name: ba_id,
             type: 'line',
-            data: realData[ba_id].map(item => item[1]),
-            tooltip: {
-                valueFormatter: function (value) {
-                    return value.toFixed(3);
-                }
-            }
-        });
-        series.push({
-            name: ba_id + ' fake',
-            type: 'line',
-            data: fakeData[ba_id].map(item => item[1]),
+            data: data[ba_id].map(item => item[1]),  // 各バッテリーのデータを使用
             tooltip: {
                 valueFormatter: function (value) {
                     return value.toFixed(3);
@@ -178,7 +174,7 @@ function drawChartsForAll(chartId, yAxisTitle, realData, fakeData, xAxisData) {
             }
         },
         legend: {
-            data: ba_ids.flatMap(ba_id => [ba_id + ' real', ba_id + ' fake']),
+            data: ba_ids,
             top: '10%',
             right: 'center'
         },
@@ -201,8 +197,6 @@ function drawChartsForAll(chartId, yAxisTitle, realData, fakeData, xAxisData) {
         chart.resize();
     });
 }
-
-
 
 // 4つのバッテリーの平均データを描画
 function drawChartsForAverage(vals) {
