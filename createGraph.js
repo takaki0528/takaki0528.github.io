@@ -135,7 +135,7 @@ function drawDoubleLineChartForAll(chartId, yAxisTitle, realData, fakeData, xAxi
     var series = [];
     ba_ids.forEach(function (ba_id) {
         series.push({
-            name: ba_id + ' real',
+            name: ba_id + ' measurement',
             type: 'line',
             data: realData[ba_id].map(item => item[1]),
             tooltip: {
@@ -145,7 +145,7 @@ function drawDoubleLineChartForAll(chartId, yAxisTitle, realData, fakeData, xAxi
             }
         });
         series.push({
-            name: ba_id + ' fake',
+            name: ba_id + ' estimate',
             type: 'line',
             data: fakeData[ba_id].map(item => item[1]),
             tooltip: {
@@ -178,7 +178,7 @@ function drawDoubleLineChartForAll(chartId, yAxisTitle, realData, fakeData, xAxi
             }
         },
         legend: {
-            data: ba_ids.flatMap(ba_id => [ba_id + ' real', ba_id + ' fake']),
+            data: ba_ids.flatMap(ba_id => [ba_id + ' measurement', ba_id + ' estimated']),
             top: '10%',
             right: 'center'
         },
@@ -363,7 +363,7 @@ function drawDoubleLineChart(chartId, yAxisTitle, realData, fakeData) {
             }
         },
         legend: {
-            data: ['real', 'fake'],
+            data: ['measurement', 'estimate'],
             top: '10%',
             right: 'center'
         },
@@ -378,7 +378,7 @@ function drawDoubleLineChart(chartId, yAxisTitle, realData, fakeData) {
         },
         series: [
             {
-                name: 'real',
+                name: 'measurement',
                 type: 'line',
                 data: realData.map(item => item[1]),
                 tooltip: {
@@ -388,7 +388,7 @@ function drawDoubleLineChart(chartId, yAxisTitle, realData, fakeData) {
                 }
             },
             {
-                name: 'fake',
+                name: 'estimate',
                 type: 'line',
                 data: fakeData.map(item => item[1]),
                 tooltip: {
