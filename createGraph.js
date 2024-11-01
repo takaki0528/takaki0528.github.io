@@ -51,8 +51,8 @@ function drawChartsForSelectedBA(vals, ba_id) {
     for (var i = 0; i < vals.length; i++) {
         voltage_data.push([vals[i].timestamp, vals[i][ba_id].voltage]);
         current_data.push([vals[i].timestamp, vals[i][ba_id].current]);
-        soc_estimated_data.push([vals[i].timestamp, vals[i][ba_id].soc.fake]);
-        soc_actual_data.push([vals[i].timestamp, vals[i][ba_id].soc.real]);
+        soc_estimated_data.push([vals[i].timestamp, vals[i][ba_id].soc.ekf]);
+        soc_actual_data.push([vals[i].timestamp, vals[i][ba_id].soc.current]);
         temp_data.push([vals[i].timestamp, vals[i][ba_id].temperature]);
         r0_real_data.push([vals[i].timestamp, vals[i][ba_id].r0.real]);
         r0_fake_data.push([vals[i].timestamp, vals[i][ba_id].r0.fake]);
