@@ -62,10 +62,16 @@ function drawChartsForSelectedBA(vals, ba_id) {
         tau1_fake_data.push([vals[i].timestamp, vals[i][ba_id].tau1.fake]);
     }
 
-    // 最新の値を更新
+    // 最新の平均値を更新
     if (vals.length > 0) {
-        var latestData = vals[vals.length - 1][ba_id];
-        updateLatestValues(latestData);  // 単一のバッテリーの最新値を更新
+        var latestData = {
+            voltage: voltage_data[voltage_data.length - 1][1],
+            current: current_data[current_data.length - 1][1],
+            soc_estimated: soc_estimated_data[soc_estimated_data.length - 1][1],
+            soc_actual: soc_actual_data[soc_actual_data.length - 1][1],
+            temperature: temp_data[temp_data.length - 1][1]
+        };
+        updateLatestValues(latestData);  // 平均値を更新
     }
 
     drawChart("voltageChart", "Voltage (V)", voltage_data);
