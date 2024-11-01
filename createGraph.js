@@ -347,6 +347,65 @@ function drawDoubleLineChartForAll(chartId, yAxisTitle, realData, fakeData, xAxi
     });
 }
 
+// 単一のバッテリーや平均データを描画するための基本的な関数
+function drawChart(chartId, yAxisTitle, data) {
+    // 既存のグラフインスタンスがある場合は破棄
+    if (echarts.getInstanceByDom(document.getElementById(chartId))) {
+        echarts.dispose(document.getElementById(chartId));  // グラフをクリア
+    }
+
+    var chart = echarts.init(document.getElementById(chartId));
+    chart.setOption({
+        title: {
+            text: yAxisTitle + ' Over Time',
+            left: 'center',
+            top: '5%',
+            textStyle: {
+                fontSize: 16,
+                padding: [10, 0, 0, 0]
+            }
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                let result = params[0].axisValueLabel + '<br/>';
+                params.forEach(item => {
+                    result += item.marker + ' ' + item.seriesName + ': ' + item.data.toFixed(3) + '<br/>';
+                });
+                return result;
+            }
+        },
+        legend: {
+            data: [selectedBaId],
+            top: '10%',
+            right: 'center'
+        },
+        grid: {
+            top: '20%'
+        },
+        xAxis: { type: 'category', data: data.map(item => item[0]) },
+        yAxis: {
+            type: 'value',
+            name: yAxisTitle,
+            scale: true
+        },
+        series: [{
+            name: selectedBaId,
+            type: 'line',
+            data: data.map(item => item[1]),
+            tooltip: {
+                valueFormatter: function (value) {
+                    return value.toFixed(3);
+                }
+            }
+        }]
+    });
+
+    window.addEventListener('resize', function () {
+        chart.resize();
+    });
+}
+
 // 最新の値を表示するための関数
 function updateLatestValues(latestData) {
     document.getElementById("latestVoltage").textContent = ` ${latestData.voltage.toFixed(2)} (V)`;
