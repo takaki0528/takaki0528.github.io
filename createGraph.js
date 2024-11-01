@@ -480,10 +480,17 @@ function drawDoubleLineChart(chartId, yAxisTitle, realData, fakeData) {
 
 // 最新の値を表示するための関数
 function updateLatestValues(latestData) {
-    document.getElementById("latestVoltage").textContent = ` ${latestData.voltage.toFixed(2)} (V)`;
-    document.getElementById("latestCurrent").textContent = ` ${latestData.current.toFixed(2)} (A)`;
-    document.getElementById("latestSOC").textContent = ` ${(latestData.soc_estimated).toFixed(2)} (%)`;
-    document.getElementById("latestTemp").textContent = ` ${latestData.temperature.toFixed(2)} (°C)`;
+    if (latestData) {
+        document.getElementById("latestVoltage").textContent = latestData.voltage !== undefined ? ` ${latestData.voltage.toFixed(2)} (V)` : 'N/A (V)';
+        document.getElementById("latestCurrent").textContent = latestData.current !== undefined ? ` ${latestData.current.toFixed(2)} (A)` : 'N/A (A)';
+        document.getElementById("latestSOC").textContent = latestData.soc_estimated !== undefined ? ` ${latestData.soc_estimated.toFixed(2)} (%)` : 'N/A (%)';
+        document.getElementById("latestTemp").textContent = latestData.temperature !== undefined ? ` ${latestData.temperature.toFixed(2)} (°C)` : 'N/A (°C)';
+    } else {
+        document.getElementById("latestVoltage").textContent = 'N/A (V)';
+        document.getElementById("latestCurrent").textContent = 'N/A (A)';
+        document.getElementById("latestSOC").textContent = 'N/A (%)';
+        document.getElementById("latestTemp").textContent = 'N/A (°C)';
+    }
 }
 
 createChart();
