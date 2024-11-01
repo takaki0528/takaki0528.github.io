@@ -79,6 +79,75 @@ function drawChartsForSelectedBA(vals, ba_id) {
     drawDoubleLineChart("tau1Chart", "Tau1", tau1_real_data, tau1_fake_data);
 }
 
+// 平均データを描画
+function drawChartsForAverage(vals) {
+    var voltage_data = [], current_data = [], soc_estimated_data = [], soc_actual_data = [], temp_data = [];
+    var r0_real_data = [], r0_fake_data = [], r1_real_data = [], r1_fake_data = [], tau1_real_data = [], tau1_fake_data = [];
+
+    for (var i = 0; i < vals.length; i++) {
+        var avg_voltage = 0, avg_current = 0, avg_soc_estimated = 0, avg_soc_actual = 0, avg_temp = 0;
+        var avg_r0_real = 0, avg_r0_fake = 0, avg_r1_real = 0, avg_r1_fake = 0, avg_tau1_real = 0, avg_tau1_fake = 0;
+        ba_ids.forEach(function (ba_id) {
+            avg_voltage += vals[i][ba_id].voltage;
+            avg_current += vals[i][ba_id].current;
+            avg_soc_estimated += vals[i][ba_id].soc.estimated;
+            avg_soc_actual += vals[i][ba_id].soc.actual;
+            avg_temp += vals[i][ba_id].temperature;
+            avg_r0_real += vals[i][ba_id].r0.real;
+            avg_r0_fake += vals[i][ba_id].r0.fake;
+            avg_r1_real += vals[i][ba_id].r1.real;
+            avg_r1_fake += vals[i][ba_id].r1.fake;
+            avg_tau1_real += vals[i][ba_id].tau1.real;
+            avg_tau1_fake += vals[i][ba_id].tau1.fake;
+        });
+        avg_voltage /= ba_ids.length;
+        avg_current /= ba_ids.length;
+        avg_soc_estimated /= ba_ids.length;
+        avg_soc_actual /= ba_ids.length;
+        avg_temp /= ba_ids.length;
+        avg_r0_real /= ba_ids.length;
+        avg_r0_fake /= ba_ids.length;
+        avg_r1_real /= ba_ids.length;
+        avg_r1_fake /= ba_ids.length;
+        avg_tau1_real /= ba_ids.length;
+        avg_tau1_fake /= ba_ids.length;
+
+        voltage_data.push([vals[i].timestamp, avg_voltage]);
+        current_data.push([vals[i].timestamp, avg_current]);
+        soc_estimated_data.push([vals[i].timestamp, avg_soc_estimated]);
+        soc_actual_data.push([vals[i].timestamp, avg_soc_actual]);
+        temp_data.push([vals[i].timestamp, avg_temp]);
+        r0_real_data.push([vals[i].timestamp, avg_r0_real]);
+        r0_fake_data.push([vals[i].timestamp, avg_r0_fake]);
+        r1_real_data.push([vals[i].timestamp, avg_r1_real]);
+        r1_fake_data.push([vals[i].timestamp, avg_r1_fake]);
+        tau1_real_data.push([vals[i].timestamp, avg_tau1_real]);
+        tau1_fake_data.push([vals[i].timestamp, avg_tau1_fake]);
+    }
+
+    // 最新の平均値を更新
+    if (vals.length > 0) {
+        var latestAverageData = {
+            voltage: voltage_data[voltage_data.length - 1][1],
+            current: current_data[current_data.length - 1][1],
+            soc_estimated: soc_estimated_data[soc_estimated_data.length - 1][1],
+            soc_actual: soc_actual_data[soc_actual_data.length - 1][1],
+            temperature: temp_data[temp_data.length - 1][1]
+        };
+        updateLatestValues(latestAverageData);  // 平均値を更新
+    }
+
+    drawChart("voltageChart", "Average Voltage (V)", voltage_data);
+    drawChart("currentChart", "Average Current (A)", current_data);
+    drawDoubleLineChart("socChart", "Average SOC (%)", soc_actual_data, soc_estimated_data);
+    drawChart("tempChart", "Average Temperature (℃)", temp_data);
+
+    // r0, r1, tau1 の real と fake をそれぞれのグラフに表示
+    drawDoubleLineChart("r0Chart", "Average R0", r0_real_data, r0_fake_data);
+    drawDoubleLineChart("r1Chart", "Average R1", r1_real_data, r1_fake_data);
+    drawDoubleLineChart("tau1Chart", "Average Tau1", tau1_real_data, tau1_fake_data);
+}
+
 // 2本のライン（real と fake、または actual と estimated）を描画するための関数
 function drawDoubleLineChart(chartId, yAxisTitle, realData, fakeData) {
     // 既存のグラフインスタンスがある場合は破棄
