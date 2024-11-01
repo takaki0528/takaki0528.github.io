@@ -90,8 +90,8 @@ function drawChartsForAverage(vals) {
         ba_ids.forEach(function (ba_id) {
             avg_voltage += vals[i][ba_id].voltage;
             avg_current += vals[i][ba_id].current;
-            avg_soc_estimated += vals[i][ba_id].soc.fake;
-            avg_soc_actual += vals[i][ba_id].soc.real;
+            avg_soc_estimated += vals[i][ba_id].soc.ekf;
+            avg_soc_actual += vals[i][ba_id].soc.current;
             avg_temp += vals[i][ba_id].temperature;
             avg_r0_real += vals[i][ba_id].r0.real;
             avg_r0_fake += vals[i][ba_id].r0.fake;
