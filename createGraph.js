@@ -51,8 +51,8 @@ function drawChartsForSelectedBA(vals, ba_id) {
     for (var i = 0; i < vals.length; i++) {
         voltage_data.push([vals[i].timestamp, vals[i][ba_id].voltage]);
         current_data.push([vals[i].timestamp, vals[i][ba_id].current]);
-        soc_estimated_data.push([vals[i].timestamp, vals[i][ba_id].soc.estimated]);
-        soc_actual_data.push([vals[i].timestamp, vals[i][ba_id].soc.actual]);
+        soc_estimated_data.push([vals[i].timestamp, vals[i][ba_id].soc.fake]);
+        soc_actual_data.push([vals[i].timestamp, vals[i][ba_id].soc.real]);
         temp_data.push([vals[i].timestamp, vals[i][ba_id].temperature]);
         r0_real_data.push([vals[i].timestamp, vals[i][ba_id].r0.real]);
         r0_fake_data.push([vals[i].timestamp, vals[i][ba_id].r0.fake]);
@@ -90,8 +90,8 @@ function drawChartsForAverage(vals) {
         ba_ids.forEach(function (ba_id) {
             avg_voltage += vals[i][ba_id].voltage;
             avg_current += vals[i][ba_id].current;
-            avg_soc_estimated += vals[i][ba_id].soc.estimated;
-            avg_soc_actual += vals[i][ba_id].soc.actual;
+            avg_soc_estimated += vals[i][ba_id].soc.fake;
+            avg_soc_actual += vals[i][ba_id].soc.real;
             avg_temp += vals[i][ba_id].temperature;
             avg_r0_real += vals[i][ba_id].r0.real;
             avg_r0_fake += vals[i][ba_id].r0.fake;
@@ -282,7 +282,7 @@ function drawChart(chartId, yAxisTitle, data) {
 function updateLatestValues(latestData) {
     document.getElementById("latestVoltage").textContent = ` ${latestData.voltage.toFixed(2)} (V)`;
     document.getElementById("latestCurrent").textContent = ` ${latestData.current.toFixed(2)} (A)`;
-    document.getElementById("latestSOC").textContent = ` ${(latestData.soc_actual).toFixed(2)} (%)`;
+    document.getElementById("latestSOC").textContent = ` ${(latestData.soc_estimated).toFixed(2)} (%)`;
     document.getElementById("latestTemp").textContent = ` ${latestData.temperature.toFixed(2)} (°C)`;
 }
 
