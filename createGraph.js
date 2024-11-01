@@ -51,8 +51,8 @@ function drawChartsForSelectedBA(vals, ba_id) {
     for (var i = 0; i < vals.length; i++) {
         voltage_data.push([vals[i].timestamp, vals[i][ba_id].voltage]);
         current_data.push([vals[i].timestamp, vals[i][ba_id].current]);
-        soc_estimated_data.push([vals[i].timestamp, vals[i][ba_id].soc.ekf]);
-        soc_actual_data.push([vals[i].timestamp, vals[i][ba_id].soc.current]);
+        soc_estimated_data.push([vals[i].timestamp, vals[i][ba_id].soc.fake]);
+        soc_actual_data.push([vals[i].timestamp, vals[i][ba_id].soc.real]);
         temp_data.push([vals[i].timestamp, vals[i][ba_id].temperature]);
         r0_real_data.push([vals[i].timestamp, vals[i][ba_id].r0.real]);
         r0_fake_data.push([vals[i].timestamp, vals[i][ba_id].r0.fake]);
@@ -90,8 +90,8 @@ function drawChartsForAverage(vals) {
         ba_ids.forEach(function (ba_id) {
             avg_voltage += vals[i][ba_id].voltage;
             avg_current += vals[i][ba_id].current;
-            avg_soc_estimated += vals[i][ba_id].soc.ekf;
-            avg_soc_actual += vals[i][ba_id].soc.current;
+            avg_soc_estimated += vals[i][ba_id].soc.fake;
+            avg_soc_actual += vals[i][ba_id].soc.real;
             avg_temp += vals[i][ba_id].temperature;
             avg_r0_real += vals[i][ba_id].r0.real;
             avg_r0_fake += vals[i][ba_id].r0.fake;
