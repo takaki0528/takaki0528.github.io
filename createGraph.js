@@ -148,133 +148,125 @@ function drawChartsForAverage(vals) {
     drawDoubleLineChart("tau1Chart", "Average Tau1", tau1_real_data, tau1_fake_data);
 }
 
-// 2本のライン（real と fake、または actual と estimated）を描画するための関数
-function drawDoubleLineChart(chartId, yAxisTitle, realData, fakeData) {
-    // 既存のグラフインスタンスがある場合は破棄
-    if (echarts.getInstanceByDom(document.getElementById(chartId))) {
-        echarts.dispose(document.getElementById(chartId));  // グラフをクリア
+// 全てのバッテリーのデータを描画
+function drawChartsForAllBA(vals) {
+    var voltage_data = {}, current_data = {}, soc_estimated_data = {}, soc_actual_data = {}, temp_data = {};
+    var r0_real_data = {}, r0_fake_data = {}, r1_real_data = {}, r1_fake_data = {}, tau1_real_data = {}, tau1_fake_data = {};
+    var xAxisData = new Set(); // Setで一意のtimestampを収集
+
+    // 各バッテリーのデータを初期化
+    ba_ids.forEach(function (ba_id) {
+        voltage_data[ba_id] = [];
+        current_data[ba_id] = [];
+        soc_estimated_data[ba_id] = [];
+        soc_actual_data[ba_id] = [];
+        temp_data[ba_id] = [];
+        r0_real_data[ba_id] = [];
+        r0_fake_data[ba_id] = [];
+        r1_real_data[ba_id] = [];
+        r1_fake_data[ba_id] = [];
+        tau1_real_data[ba_id] = [];
+        tau1_fake_data[ba_id] = [];
+    });
+
+    // 各バッテリーのデータを収集
+    for (var i = 0; i < vals.length; i++) {
+        ba_ids.forEach(function (ba_id) {
+            xAxisData.add(vals[i].timestamp);  // すべてのtimestampを収集
+            voltage_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].voltage]);
+            current_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].current]);
+            soc_estimated_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc.fake]);
+            soc_actual_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].soc.real]);
+            temp_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].temperature]);
+            r0_real_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].r0.real]);
+            r0_fake_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].r0.fake]);
+            r1_real_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].r1.real]);
+            r1_fake_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].r1.fake]);
+            tau1_real_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].tau1.real]);
+            tau1_fake_data[ba_id].push([vals[i].timestamp, vals[i][ba_id].tau1.fake]);
+        });
     }
 
-    var chart = echarts.init(document.getElementById(chartId));
-    chart.setOption({
-        title: {
-            text: yAxisTitle + ' Over Time',
-            left: 'center',
-            top: '5%',
-            textStyle: {
-                fontSize: 16,
-                padding: [10, 0, 0, 0]
-            }
-        },
-        tooltip: {
-            trigger: 'axis',
-            formatter: function (params) {
-                let result = params[0].axisValueLabel + '<br/>';
-                params.forEach(item => {
-                    result += item.marker + ' ' + item.seriesName + ': ' + item.data.toFixed(3) + '<br/>';
-                });
-                return result;
-            }
-        },
-        legend: {
-            data: ['Actual', 'Estimated'],
-            top: '10%',
-            right: 'center'
-        },
-        grid: {
-            top: '20%'
-        },
-        xAxis: { type: 'category', data: realData.map(item => item[0]) },
-        yAxis: {
-            type: 'value',
-            name: yAxisTitle,
-            scale: true
-        },
-        series: [
-            {
-                name: 'Actual',
-                type: 'line',
-                data: realData.map(item => item[1]),
-                tooltip: {
-                    valueFormatter: function (value) {
-                        return value.toFixed(3);
-                    }
-                }
-            },
-            {
-                name: 'Estimated',
-                type: 'line',
-                data: fakeData.map(item => item[1]),
-                tooltip: {
-                    valueFormatter: function (value) {
-                        return value.toFixed(3);
-                    }
-                }
-            }
-        ]
-    });
+    // xAxisDataをソートして配列に変換
+    xAxisData = Array.from(xAxisData).sort();
 
-    window.addEventListener('resize', function () {
-        chart.resize();
-    });
+    // 各データを描画
+    drawChartForAll("voltageChart", "Voltage (V)", voltage_data, xAxisData);
+    drawChartForAll("currentChart", "Current (A)", current_data, xAxisData);
+    drawDoubleLineChartForAll("socChart", "SOC (%)", soc_actual_data, soc_estimated_data, xAxisData);
+    drawChartForAll("tempChart", "Temperature (℃)", temp_data, xAxisData);
+
+    // r0, r1, tau1 の real と fake をそれぞれのグラフに表示
+    drawDoubleLineChartForAll("r0Chart", "R0", r0_real_data, r0_fake_data, xAxisData);
+    drawDoubleLineChartForAll("r1Chart", "R1", r1_real_data, r1_fake_data, xAxisData);
+    drawDoubleLineChartForAll("tau1Chart", "Tau1", tau1_real_data, tau1_fake_data, xAxisData);
 }
 
-// 単一のバッテリーや平均データを描画するための基本的な関数
-function drawChart(chartId, yAxisTitle, data) {
+// すべてのバッテリーのデータを描画するための関数
+function drawChartForAll(chartId, yAxisTitle, data, xAxisData) {
     // 既存のグラフインスタンスがある場合は破棄
     if (echarts.getInstanceByDom(document.getElementById(chartId))) {
         echarts.dispose(document.getElementById(chartId));  // グラフをクリア
     }
 
-    var chart = echarts.init(document.getElementById(chartId));
-    chart.setOption({
-        title: {
-            text: yAxisTitle + ' Over Time',
-            left: 'center',
-            top: '5%',
-            textStyle: {
-                fontSize: 16,
-                padding: [10, 0, 0, 0]
-            }
-        },
-        tooltip: {
-            trigger: 'axis',
-            formatter: function (params) {
-                let result = params[0].axisValueLabel + '<br/>';
-                params.forEach(item => {
-                    result += item.marker + ' ' + item.seriesName + ': ' + item.data.toFixed(3) + '<br/>';
-                });
-                return result;
-            }
-        },
-        legend: {
-            data: [selectedBaId],
-            top: '10%',
-            right: 'center'
-        },
-        grid: {
-            top: '20%'
-        },
-        xAxis: { type: 'category', data: data.map(item => item[0]) },
-        yAxis: {
-            type: 'value',
-            name: yAxisTitle,
-            scale: true
-        },
-        series: [{
-            name: selectedBaId,
+    var series = [];
+    ba_ids.forEach(function (ba_id) {
+        series.push({
+            name: ba_id,
             type: 'line',
-            data: data.map(item => item[1]),
+            data: data[ba_id].map(item => item[1]),  // 各バッテリーのデータを使用
             tooltip: {
                 valueFormatter: function (value) {
                     return value.toFixed(3);
                 }
             }
-        }]
+        });
+    });
+
+    var chart = echarts.init(document.getElementById(chartId));
+    chart.setOption({
+        title: {
+            text: yAxisTitle + ' Over Time',
+            left: 'center',
+            top: '5%',
+            textStyle: {
+                fontSize: 16,
+                padding: [10, 0, 0, 0]
+            }
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                let result = params[0].axisValueLabel + '<br/>';
+                params.forEach(item => {
+                    result += item.marker + ' ' + item.seriesName + ': ' + item.data.toFixed(3) + '<br/>';
+                });
+                return result;
+            }
+        },
+        legend: {
+            data: ba_ids,
+            top: '10%',
+            right: 'center'
+        },
+        grid: {
+            top: '20%'
+        },
+        xAxis: {
+            type: 'category',
+            data: xAxisData  // 共通のtimestampを使用
+        },
+        yAxis: {
+            type: 'value',
+            name: yAxisTitle,
+            scale: true
+        },
+        series: series
     });
 
     window.addEventListener('resize', function () {
         chart.resize();
+
     });
 }
 
